@@ -59,7 +59,7 @@ class RegisterUser(APIView):
             return Response(data={"message": "error"}, status=500)
 
         serializer.save()
-        user = User.objects.get(username=serializer.data["username"])
+        user = User.objects.get(email=serializer.data["email"])
         token_obj, _ = Token.objects.get_or_create(user=user)
         return Response({"status": 403, "payload": serializer.data, "token": str(token_obj)})
 
