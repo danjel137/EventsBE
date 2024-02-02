@@ -57,6 +57,7 @@ class RegisterUser(APIView):
 
         if not serializer.is_valid():
             return Response(data={"message": "error"}, status=500)
+
         serializer.save()
         user = User.objects.get(username=serializer.data["username"])
         token_obj, _ = Token.objects.get_or_create(user=user)
