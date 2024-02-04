@@ -1,13 +1,15 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 
 class Photo(models.Model):
     id = models.AutoField(primary_key=True)
-    owner_id=models.IntegerField(max_length=20,null=True)
+    owner_id = models.CharField(max_length=20, null=True)
     title = models.CharField(max_length=100, null=True)
     description = models.TextField(null=True)
     image_base64 = models.TextField(blank=True, null=True)
+    date_created = models.DateField(default=timezone.now().date())
 
     def __str__(self):
         return self.title

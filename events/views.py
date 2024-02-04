@@ -9,20 +9,23 @@ from .serializers import PhotoSerializer, UserSerializer
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-
+from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-
-
 
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_photo_list(request):
-    photos = Photo.objects.all().order_by('-id')
+    authenticated_user = request.user
+
+    # Print the type of user's ID
+    print("----------------", authenticated_user.id)
+    photos = Photo.objects.filter(owner_id=authenticated_user.id).order_by('-id')
     serializer = PhotoSerializer(photos, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
@@ -41,6 +44,7 @@ def add_photo(request):
 
     request_data = request.data.copy()
     request_data['owner_id'] = authenticated_user.id
+    request_data['date_created'] = timezone.now().date()
 
     serializer_new_data = PhotoSerializer(data=request_data)
 
@@ -49,6 +53,7 @@ def add_photo(request):
         return Response(data={"message": f"Object with id={added_item.id} added"}, status=status.HTTP_201_CREATED)
     else:
         return Response(data={"message": "Invalid data"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
@@ -59,7 +64,8 @@ def delete_photo(request, id):
         photo.delete()
         return Response(data={"message": f"Object {id} deleted"})
     except Exception as e:
-        return Response(data={"message": f"Failed to delete photo: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(data={"message": f"Failed to delete photo: {str(e)}"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # class RegisterUser(APIView):
