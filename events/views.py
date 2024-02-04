@@ -32,11 +32,18 @@ def get_photo_by_id(request, id):
     serializer = PhotoSerializer(photo)
     return Response(serializer.data)
 
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def add_photo(request):
-    serializer_new_data = PhotoSerializer(data=request.data)
+    authenticated_user = request.user
+
+    request_data = request.data.copy()
+    request_data['owner_id'] = authenticated_user.id
+
+    serializer_new_data = PhotoSerializer(data=request_data)
+
     if serializer_new_data.is_valid():
         added_item = serializer_new_data.save()
         return Response(data={"message": f"Object with id={added_item.id} added"}, status=status.HTTP_201_CREATED)
@@ -55,17 +62,17 @@ def delete_photo(request, id):
         return Response(data={"message": f"Failed to delete photo: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class RegisterUser(APIView):
-    def post(self, request):
-        serializer = UserSerializer(data=request.data)
-
-        if not serializer.is_valid():
-            return Response(data={"message": "error"}, status=500)
-
-        serializer.save()
-        user = User.objects.get(email=serializer.data["email"])
-        token_obj, _ = Token.objects.get_or_create(user=user)
-        return Response({"status": 403, "payload": serializer.data, "token": str(token_obj)})
+# class RegisterUser(APIView):
+#     def post(self, request):
+#         serializer = UserSerializer(data=request.data)
+#
+#         if not serializer.is_valid():
+#             return Response(data={"message": "error"}, status=500)
+#
+#         serializer.save()
+#         user = User.objects.get(email=serializer.data["email"])
+#         token_obj, _ = Token.objects.get_or_create(user=user)
+#         return Response({"status": 403, "payload": serializer.data, "token": str(token_obj)})
 
 
 class RegisterUser(APIView):

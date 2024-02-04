@@ -1,12 +1,10 @@
 from django.contrib.auth.models import User
 from django.db import models
-import base64
-from PIL import Image
-from io import BytesIO
 
 
 class Photo(models.Model):
     id = models.AutoField(primary_key=True)
+    owner_id=models.IntegerField(max_length=20,null=True)
     title = models.CharField(max_length=100, null=True)
     description = models.TextField(null=True)
     image_base64 = models.TextField(blank=True, null=True)
